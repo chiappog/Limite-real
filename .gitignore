@@ -5,7 +5,9 @@ yarn.lock
 
 # Datos del usuario
 data/
-*.json
+data/*.json
+# Permitir package.json
+!package.json
 
 # Logs
 *.log
