@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Saber cuánto podés gastar HOY con tu tarjeta sin pasarte">
+    <title>Límite Real 💳</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <span class="icon">💳</span>
+            <h1>Límite Real</h1>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sección de configuración -->
+        <section id="config-section" class="card">
+            <h2>Configuración</h2>
+            <div class="form-group">
+                <label for="limite-total">
+                    <span class="icon">💳</span>
+                    Límite total de la tarjeta
+                </label>
+                <input 
+                    type="number" 
+                    id="limite-total" 
+                    placeholder="Ej: 50000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="gastos-mes">
+                    <span class="icon">📊</span>
+                    Gastos del mes
+                </label>
+                <input 
+                    type="number" 
+                    id="gastos-mes" 
+                    placeholder="Ej: 15000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="cuotas-activas">
+                    <span class="icon">📅</span>
+                    Cuotas activas
+                </label>
+                <input 
+                    type="number" 
+                    id="cuotas-activas" 
+                    placeholder="Ej: 5000"
+                    min="0"
+                    step="0.01"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="dia-cierre">
+                    <span class="icon">📅</span>
+                    Día de cierre
+                </label>
+                <input 
+                    type="number" 
+                    id="dia-cierre" 
+                    placeholder="Ej: 15"
+                    min="1"
+                    max="31"
+                >
+            </div>
+
+            <button id="btn-calcular" class="btn-primary">
+                Calcular mi límite real
+            </button>
+        </section>
+
+        <!-- Sección principal - Resultado -->
+        <section id="result-section" class="card hidden">
+            <div class="result-header">
+                <p class="result-label">Hoy podés gastar</p>
+                <div class="result-amount" id="disponible-hoy">
+                    $0
+                </div>
+            </div>
+
+            <div class="result-details">
+                <div class="detail-item">
+                    <span class="detail-label">Límite real disponible</span>
+                    <span class="detail-value" id="limite-real">$0</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Días hasta cierre</span>
+                    <span class="detail-value" id="dias-cierre">0</span>
+                </div>
+            </div>
+
+            <div class="status-message" id="status-message">
+                <span class="icon">✅</span>
+                <span>Vas bien</span>
+            </div>
+        </section>
+
+        <!-- Sección de acción rápida -->
+        <section id="action-section" class="card hidden">
+            <h2>Registrar gasto</h2>
+            <div class="gasto-input-group">
+                <label for="gasto-monto">Gasté</label>
+                <div class="input-with-button">
+                    <input 
+                        type="number" 
+                        id="gasto-monto" 
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                    >
+                    <button id="btn-registrar" class="btn-secondary">
+                        Registrar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historial de gastos del día -->
+        <section id="historial-section" class="card hidden">
+            <h2>Gastos de hoy</h2>
+            <ul id="gastos-lista" class="gastos-lista">
+                <!-- Se llena dinámicamente -->
+            </ul>
+            <div class="gasto-total">
+                <span>Total hoy:</span>
+                <span id="total-hoy">$0</span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p class="legal-notice">
+            ℹ️ Límite Real no es un banco ni una entidad financiera.
+            No tiene acceso a tu tarjeta.
+            Los cálculos son estimaciones basadas en los datos que vos ingresás.
+        </p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

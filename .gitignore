@@ -1,0 +1,34 @@
+# Dependencias
+node_modules/
+package-lock.json
+yarn.lock
+
+# Datos del usuario
+data/
+*.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno
+.env
+.env.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# WhatsApp session
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Build
+dist/
+build/
