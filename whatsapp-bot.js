@@ -111,15 +111,14 @@ client.on('message', async (message) => {
         } else if (texto === 'ayuda' || texto === 'help') {
             await mostrarAyuda(message);
         } else {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '🤔 No entendí ese comando.\n\n' +
-                'Escribí *ayuda* para ver los comandos disponibles.',
-                { sendSeen: true }
+                'Escribí *ayuda* para ver los comandos disponibles.'
             );
         }
     } catch (error) {
         console.error('Error al procesar mensaje:', error);
-        await message.reply('❌ Ocurrió un error. Por favor, intentá de nuevo.', { sendSeen: true });
+        await enviarMensajeSeguro(message, '❌ Ocurrió un error. Por favor, intentá de nuevo.');
     }
 });
 
@@ -136,7 +135,7 @@ async function enviarSaludo(message) {
         'Los cálculos son estimaciones basadas en los datos que vos ingresás.\n\n' +
         '💬 Escribí *ayuda* para ver los comandos disponibles.';
 
-    await message.reply(saludo, { sendSeen: true });
+    await enviarMensajeSeguro(message, saludo);
 }
 
 /**
@@ -151,6 +150,19 @@ function esErrorDeConexion(error) {
 }
 
 /**
+ * Envía mensaje usando client.sendMessage para evitar "t.replace is not a function"
+ * (message.reply llama getChat() internamente y puede fallar con ciertos chats)
+ */
+async function enviarMensajeSeguro(message, texto) {
+    try {
+        await client.sendMessage(message.from, texto, { sendSeen: true });
+    } catch (error) {
+        console.error('Error al enviar mensaje:', error.message || error);
+        throw error;
+    }
+}
+
+/**
  * Muestra el disponible para hoy
  */
 async function mostrarDisponibleHoy(message) {
@@ -161,10 +173,9 @@ async function mostrarDisponibleHoy(message) {
         const data = response.data;
 
         if (!data.configurado) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ Aún no configuraste tu tarjeta.\n\n' +
-                'Escribí *configurar* para empezar.',
-                { sendSeen: true }
+                'Escribí *configurar* para empezar.'
             );
             return;
         }
@@ -179,18 +190,17 @@ async function mostrarDisponibleHoy(message) {
             `📅 Cierre en ${diasRestantes} días\n` +
             `${emoji} ${mensajeEstado}`;
 
-        await message.reply(respuesta, { sendSeen: true });
+        await enviarMensajeSeguro(message, respuesta);
     } catch (error) {
         console.error('Error:', error.message || error);
         if (esErrorDeConexion(error)) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ No puedo conectarme al servidor.\n\n' +
                 'Verificá que el servidor esté corriendo:\n' +
-                '`node server.js`',
-                { sendSeen: true }
+                '`node server.js`'
             );
         } else {
-            await message.reply('❌ Error al obtener el estado. Intentá de nuevo.', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Error al obtener el estado. Intentá de nuevo.');
         }
     }
 }
@@ -206,10 +216,9 @@ async function mostrarResumen(message) {
         const data = response.data;
 
         if (!data.configurado) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ Aún no configuraste tu tarjeta.\n\n' +
-                'Escribí *configurar* para empezar.',
-                { sendSeen: true }
+                'Escribí *configurar* para empezar.'
             );
             return;
         }
@@ -225,18 +234,17 @@ async function mostrarResumen(message) {
             `📅 Días hasta cierre: ${diasRestantes}\n\n` +
             `${emoji} Estado: ${estado === 'ok' ? 'Vas bien' : estado === 'warning' ? 'Cuidado' : 'Sin crédito'}`;
 
-        await message.reply(respuesta, { sendSeen: true });
+        await enviarMensajeSeguro(message, respuesta);
     } catch (error) {
         console.error('Error:', error.message || error);
         if (esErrorDeConexion(error)) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ No puedo conectarme al servidor.\n\n' +
                 'Verificá que el servidor esté corriendo:\n' +
-                '`node server.js`',
-                { sendSeen: true }
+                '`node server.js`'
             );
         } else {
-            await message.reply('❌ Error al obtener el resumen.', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Error al obtener el resumen.');
         }
     }
 }
@@ -249,14 +257,14 @@ async function registrarGasto(message, texto) {
         // Extraer monto del texto
         const match = texto.match(/gast[ée]\s+(\d+(?:[.,]\d+)?)/i);
         if (!match) {
-            await message.reply('❌ No pude entender el monto. Escribí: *Gasté 1200*', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ No pude entender el monto. Escribí: *Gasté 1200*');
             return;
         }
 
         const monto = parseFloat(match[1].replace(',', '.'));
 
         if (monto <= 0) {
-            await message.reply('❌ El monto debe ser mayor a 0', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ El monto debe ser mayor a 0');
             return;
         }
 
@@ -274,21 +282,20 @@ async function registrarGasto(message, texto) {
                 `Te quedan ${formatCurrency(disponibleHoy)} hoy\n` +
                 `${emoji}`;
 
-            await message.reply(respuesta, { sendSeen: true });
+            await enviarMensajeSeguro(message, respuesta);
         }
     } catch (error) {
         console.error('Error:', error.message || error);
         if (esErrorDeConexion(error)) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ No puedo conectarme al servidor.\n\n' +
                 'Verificá que el servidor esté corriendo:\n' +
-                '`node server.js`',
-                { sendSeen: true }
+                '`node server.js`'
             );
         } else if (error.response && error.response.status === 400) {
-            await message.reply('⚠️ ' + error.response.data.error, { sendSeen: true });
+            await enviarMensajeSeguro(message, '⚠️ ' + error.response.data.error);
         } else {
-            await message.reply('❌ Error al registrar el gasto.', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Error al registrar el gasto.');
         }
     }
 }
@@ -303,19 +310,18 @@ async function resetearMes(message) {
         });
 
         if (response.data.success) {
-            await message.reply('✅ Mes reseteado correctamente. Los gastos del mes y de hoy fueron limpiados.', { sendSeen: true });
+            await enviarMensajeSeguro(message, '✅ Mes reseteado correctamente. Los gastos del mes y de hoy fueron limpiados.');
         }
     } catch (error) {
         console.error('Error:', error.message || error);
         if (esErrorDeConexion(error)) {
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 '⚠️ No puedo conectarme al servidor.\n\n' +
                 'Verificá que el servidor esté corriendo:\n' +
-                '`node server.js`',
-                { sendSeen: true }
+                '`node server.js`'
             );
         } else {
-            await message.reply('❌ Error al resetear el mes.', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Error al resetear el mes.');
         }
     }
 }
@@ -327,11 +333,10 @@ async function iniciarConfiguracion(message, numero) {
     configurando = true;
     datosConfiguracion = {};
 
-    await message.reply(
+    await enviarMensajeSeguro(message,
         '⚙️ *Configuración de tu tarjeta*\n\n' +
         'Vamos a configurar tu tarjeta paso a paso.\n\n' +
-        '1️⃣ Enviame el *límite total* de tu tarjeta (ejemplo: 50000)',
-        { sendSeen: true }
+        '1️⃣ Enviame el *límite total* de tu tarjeta (ejemplo: 50000)'
     );
 }
 
@@ -345,46 +350,43 @@ async function manejarConfiguracion(message, texto, numero) {
         // Límite total
         const limite = parseFloat(texto.replace(',', '.'));
         if (isNaN(limite) || limite <= 0) {
-            await message.reply('❌ Por favor, enviame un número válido mayor a 0', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Por favor, enviame un número válido mayor a 0');
             return;
         }
         datosConfiguracion.limiteTotal = limite;
-        await message.reply(
+        await enviarMensajeSeguro(message,
             `✅ Límite total: ${formatCurrency(limite)}\n\n` +
-            '2️⃣ Enviame los *gastos del mes* (ejemplo: 15000 o 0 si no hay)',
-            { sendSeen: true }
+            '2️⃣ Enviame los *gastos del mes* (ejemplo: 15000 o 0 si no hay)'
         );
     } else if (paso === 1) {
         // Gastos del mes
         const gastos = parseFloat(texto.replace(',', '.')) || 0;
         if (isNaN(gastos) || gastos < 0) {
-            await message.reply('❌ Por favor, enviame un número válido (0 o mayor)', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Por favor, enviame un número válido (0 o mayor)');
             return;
         }
         datosConfiguracion.gastosMes = gastos;
-        await message.reply(
+        await enviarMensajeSeguro(message,
             `✅ Gastos del mes: ${formatCurrency(gastos)}\n\n` +
-            '3️⃣ Enviame las *cuotas activas* (ejemplo: 5000 o 0 si no hay)',
-            { sendSeen: true }
+            '3️⃣ Enviame las *cuotas activas* (ejemplo: 5000 o 0 si no hay)'
         );
     } else if (paso === 2) {
         // Cuotas activas
         const cuotas = parseFloat(texto.replace(',', '.')) || 0;
         if (isNaN(cuotas) || cuotas < 0) {
-            await message.reply('❌ Por favor, enviame un número válido (0 o mayor)', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Por favor, enviame un número válido (0 o mayor)');
             return;
         }
         datosConfiguracion.cuotasActivas = cuotas;
-        await message.reply(
+        await enviarMensajeSeguro(message,
             `✅ Cuotas activas: ${formatCurrency(cuotas)}\n\n` +
-            '4️⃣ Enviame el *día de cierre* de tu tarjeta (número del 1 al 31)',
-            { sendSeen: true }
+            '4️⃣ Enviame el *día de cierre* de tu tarjeta (número del 1 al 31)'
         );
     } else if (paso === 3) {
         // Día de cierre
         const diaCierre = parseInt(texto);
         if (isNaN(diaCierre) || diaCierre < 1 || diaCierre > 31) {
-            await message.reply('❌ Por favor, enviame un número entre 1 y 31', { sendSeen: true });
+            await enviarMensajeSeguro(message, '❌ Por favor, enviame un número entre 1 y 31');
             return;
         }
         datosConfiguracion.diaCierre = diaCierre;
@@ -402,7 +404,7 @@ async function manejarConfiguracion(message, texto, numero) {
             });
             const resultado = response.data;
 
-            await message.reply(
+            await enviarMensajeSeguro(message,
                 `✅ *Configuración completada*\n\n` +
                 `💳 Límite total: ${formatCurrency(datosConfiguracion.limiteTotal)}\n` +
                 `📊 Gastos del mes: ${formatCurrency(datosConfiguracion.gastosMes)}\n` +
@@ -412,8 +414,7 @@ async function manejarConfiguracion(message, texto, numero) {
                 `*${formatCurrency(resultado.disponibleHoy)}*\n\n` +
                 `📅 Cierre en ${resultado.diasRestantes} días\n` +
                 `✅ Vas bien\n\n` +
-                `Escribí *hoy* para consultar tu disponible en cualquier momento.`,
-                { sendSeen: true }
+                `Escribí *hoy* para consultar tu disponible en cualquier momento.`
             );
 
             configurando = false;
@@ -421,15 +422,14 @@ async function manejarConfiguracion(message, texto, numero) {
         } catch (error) {
             console.error('Error al guardar configuración:', error.message || error);
             if (esErrorDeConexion(error)) {
-                await message.reply(
+                await enviarMensajeSeguro(message,
                     '⚠️ No puedo conectarme al servidor.\n\n' +
                     'Verificá que el servidor esté corriendo:\n' +
                     '`node server.js`\n\n' +
-                    'Tu configuración se perdió. Volvé a intentar cuando el servidor esté activo.',
-                    { sendSeen: true }
+                    'Tu configuración se perdió. Volvé a intentar cuando el servidor esté activo.'
                 );
             } else {
-                await message.reply('❌ Error al guardar la configuración. Intentá de nuevo.', { sendSeen: true });
+                await enviarMensajeSeguro(message, '❌ Error al guardar la configuración. Intentá de nuevo.');
             }
             configurando = false;
             datosConfiguracion = {};
@@ -454,7 +454,7 @@ async function mostrarAyuda(message) {
         '• "Gasté 3500"\n' +
         '• "Resumen"';
 
-    await message.reply(ayuda, { sendSeen: true });
+    await enviarMensajeSeguro(message, ayuda);
 }
 
 // Manejar errores durante la inicialización
