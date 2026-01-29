@@ -76,13 +76,23 @@ client.on('disconnected', (reason) => {
  */
 client.on('message', async (message) => {
     const chat = await message.getChat();
-    const contacto = await message.getContact();
     
-    // Solo responder a mensajes de texto (no grupos por ahora)
-    if (message.fromMe || chat.isGroup) {
+    // Filtrar mensajes que no deben recibir respuestas:
+    // - Mensajes propios
+    // - Grupos
+    // - Broadcasts/Status (chats de difusión)
+    // - Mensajes que no son de tipo 'chat' (sistema, notificaciones, etc.)
+    // - Mensajes sin cuerpo o vacíos
+    if (message.fromMe || 
+        chat.isGroup || 
+        chat.isBroadcast || 
+        message.type !== 'chat' ||
+        !message.body ||
+        message.body.trim().length === 0) {
         return;
     }
 
+    const contacto = await message.getContact();
     const texto = message.body.trim().toLowerCase();
     const numero = contacto.number;
 
